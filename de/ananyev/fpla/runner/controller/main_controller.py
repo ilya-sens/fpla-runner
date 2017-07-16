@@ -2,7 +2,9 @@ import json
 import trace
 import sys
 import _thread
-from de.ananyev.fpla.runner.script.test_script import Script
+
+from de.ananyev.fpla.runner.scenario.fb_scenario import FbScenario
+from de.ananyev.fpla.runner.scenario.test_scenario import TestScenario
 from klein import run, route, Klein
 
 
@@ -34,8 +36,11 @@ class MainController():
         request.setHeader('Content-Type', 'application/json')
         return json.dumps(self._items.get(name))
 
-    @app.route('/run/<string:name>', methods=['GET'])
-    def run_script(self, request, name):
+    # scenario
+    @app.route('/scenario/run/<string:name>', methods=['GET'])
+    def run_scenario(self, request, name):
         request.setHeader('Content-Type', 'application/json')
-        _thread.start_new(self.tracer.run, ('Script().run()',))
-        return
+        # _thread.start_new(self.tracer.run, (name + '().run()',))
+        print(name + '().run()',)
+        return _thread.start_new(self.tracer.run, ('FbScenario().run()',))
+

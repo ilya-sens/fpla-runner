@@ -3,7 +3,7 @@ import time
 from selenium import webdriver
 
 
-class Script():
+class TestScenario():
     def __init__(self):
         self._items = {}
 
