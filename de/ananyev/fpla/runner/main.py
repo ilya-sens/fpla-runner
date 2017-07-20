@@ -1,7 +1,7 @@
 from de.ananyev.fpla.runner.controller.main_controller import MainController
 # tracerTest must be imported to be started from tracer
-from de.ananyev.fpla.runner.scenario.fb_scenario import FbScenario
-from de.ananyev.fpla.runner.scenario.test_scenario import TestScenario
+# from de.ananyev.fpla.runner.scenario.fb_scenario import FbScenario
+# from de.ananyev.fpla.runner.scenario.test_scenario import TestScenario
 
 PORT = 3434
 

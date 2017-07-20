@@ -1,14 +1,14 @@
+import importlib
 import json
 import sys
 import trace
+import uuid
 
 from klein import Klein
 
-from de.ananyev.fpla.runner.scenario.test_scenario import TestScenario
-
 
 class MainController():
-    threads = []
+    threads = {}
     app = Klein()
     tracer = trace.Trace(
         ignoredirs=[sys.prefix, sys.exec_prefix],
@@ -19,12 +19,14 @@ class MainController():
     @app.route('/scenario/run/<string:name>', methods=['GET'])
     def run_scenario(self, request, name):
         request.setHeader('Content-Type', 'application/json')
-        test_scenario = TestScenario()
-        test_scenario.start()
-        self.threads.append(test_scenario)
-        return json.dumps({'success': True})
+        mod = importlib.import_module('de.ananyev.fpla.runner.scenario.' + name)
+        scenario = mod.Scenario()
+        scenario.start()
+        generated_uuid = uuid.uuid4().__str__()
+        self.threads[generated_uuid] = scenario
+        return json.dumps({'success': True, 'thread_id': generated_uuid})
 
-    @app.route('/scenario/status/<string:name>', methods=['GET'])
-    def get_status(self, request, name):
+    @app.route('/scenario/status/<string:thread_uuid>', methods=['GET'])
+    def get_status(self, request, thread_uuid):
         request.setHeader('Content-Type', 'application/json')
-        return json.dumps(self.threads[len(self.threads) - 1].status)
+        return json.dumps(self.threads[thread_uuid].status)

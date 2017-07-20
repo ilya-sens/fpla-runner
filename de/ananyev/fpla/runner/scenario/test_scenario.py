@@ -3,9 +3,9 @@ import time
 from de.ananyev.fpla.runner.scenario.abstract_scenario import AbstractScenario
 
 
-class TestScenario(AbstractScenario):
+class Scenario(AbstractScenario):
     def __init__(self):
-        super(TestScenario, self).__init__()
+        super(Scenario, self).__init__()
 
     def do_run(self):
         self.open_browser()
