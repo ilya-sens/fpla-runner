@@ -1,27 +1,20 @@
 import time
 
-from selenium import webdriver
+from de.ananyev.fpla.runner.scenario.abstract_scenario import AbstractScenario
 
 
-class TestScenario():
+class TestScenario(AbstractScenario):
     def __init__(self):
-        self._items = {}
+        super(TestScenario, self).__init__()
 
-    browser = None
-
-    def run(self):
-        self.openBrowser()
+    def do_run(self):
+        self.open_browser()
         while True:
             time.sleep(5)
-            self.getTime()
-            # todo save in the db
+            self.browser.get('http://localhost:8761/')
+            print(self.get_time())
 
-    def openBrowser(self):
-        self.browser = webdriver.PhantomJS(
-            "/home/ilya/Programming/fpla/fpla-core/node_modules/phantomjs-prebuilt/bin/phantomjs")
-        self.browser.get('http://localhost:8761/')
-
-    def getTime(self):
+    def get_time(self):
         current_time_element = self.browser.find_element_by_xpath(
             "//*[text()[contains(.,'Current time')]]/following-sibling::td")
-        print(current_time_element.text)
+        return current_time_element.text
