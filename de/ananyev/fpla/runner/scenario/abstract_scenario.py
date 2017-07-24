@@ -29,7 +29,6 @@ class AbstractScenario(threading.Thread):
             desired_capabilities=desired_capabilities)
         self.browser.set_window_size(1024, 768)
 
-
     def run(self):
         with SetTrace(self.monitor):
             self.do_run()
@@ -41,6 +40,5 @@ class AbstractScenario(threading.Thread):
         if event == "line":
             frame_info = getframeinfo(frame)
             if "/scenario/" in frame_info.filename:
-                # print(frame_info.filename, frame_info.lineno)
                 self.status = '%s %s' % (frame_info.filename, frame_info.lineno)
         return self.monitor
