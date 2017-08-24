@@ -1,9 +1,11 @@
+import codecs
 import importlib
 import json
 import sys
 import trace
 import uuid
 
+import os
 from klein import Klein
 
 
@@ -30,3 +32,14 @@ class MainController():
     def get_status(self, request, thread_uuid):
         request.setHeader('Content-Type', 'application/json')
         return json.dumps(self.threads[thread_uuid].status)
+
+    @app.route('/scenario/upload', methods=['POST'])
+    def upload_scenario(self, request):
+        request.setHeader('Content-Type', 'application/json')
+        reader = codecs.getreader("utf-8")
+        scenario_file_json = json.load(reader(request.content))
+        file = open(os.path.join(os.path.dirname(sys.argv[0]), 'scenario', scenario_file_json['name']), "w")
+        file.write(scenario_file_json['sequence'])
+        file.close()
+
+        return json.dumps({'success': True, 'filename': scenario_file_json['name']})
