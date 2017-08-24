@@ -1,45 +1,38 @@
-import codecs
 import importlib
 import json
+import os
 import sys
 import trace
 import uuid
 
-import os
-from klein import Klein
+from flask import Blueprint, request
 
+scenario = Blueprint('scenario', __name__)
+threads = {}
+tracer = trace.Trace(
+    ignoredirs=[sys.prefix, sys.exec_prefix],
+    trace=1,
+    count=0)
 
-class MainController():
-    threads = {}
-    app = Klein()
-    tracer = trace.Trace(
-        ignoredirs=[sys.prefix, sys.exec_prefix],
-        trace=1,
-        count=0)
+# scenario
+@scenario.route('/run/<string:name>', methods=['GET'])
+def run_scenario(name):
+    mod = importlib.import_module('de.ananyev.fpla.runner.scenario.' + name)
+    scenario = mod.Scenario()
+    scenario.start()
+    generated_uuid = uuid.uuid4().__str__()
+    threads[generated_uuid] = scenario
+    return json.dumps({'success': True, 'thread_id': generated_uuid})
 
-    # scenario
-    @app.route('/scenario/run/<string:name>', methods=['GET'])
-    def run_scenario(self, request, name):
-        request.setHeader('Content-Type', 'application/json')
-        mod = importlib.import_module('de.ananyev.fpla.runner.scenario.' + name)
-        scenario = mod.Scenario()
-        scenario.start()
-        generated_uuid = uuid.uuid4().__str__()
-        self.threads[generated_uuid] = scenario
-        return json.dumps({'success': True, 'thread_id': generated_uuid})
+@scenario.route('/status/<string:thread_uuid>', methods=['GET'])
+def get_status(thread_uuid):
+    return json.dumps(threads[thread_uuid].status)
 
-    @app.route('/scenario/status/<string:thread_uuid>', methods=['GET'])
-    def get_status(self, request, thread_uuid):
-        request.setHeader('Content-Type', 'application/json')
-        return json.dumps(self.threads[thread_uuid].status)
+@scenario.route('/upload', methods=['POST'])
+def upload_scenario():
+    scenario_file_json = request.get_json()
+    file = open(os.path.join(os.path.dirname(sys.argv[0]), 'scenario', scenario_file_json['fileName']), "w")
+    file.write(scenario_file_json['sequence'])
+    file.close()
 
-    @app.route('/scenario/upload', methods=['POST'])
-    def upload_scenario(self, request):
-        request.setHeader('Content-Type', 'application/json')
-        reader = codecs.getreader("utf-8")
-        scenario_file_json = json.load(reader(request.content))
-        file = open(os.path.join(os.path.dirname(sys.argv[0]), 'scenario', scenario_file_json['name']), "w")
-        file.write(scenario_file_json['sequence'])
-        file.close()
-
-        return json.dumps({'success': True, 'filename': scenario_file_json['name']})
+    return json.dumps({'success': True, 'filename': scenario_file_json['fileName']})
