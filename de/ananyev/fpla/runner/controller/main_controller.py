@@ -26,7 +26,7 @@ def run_scenario(name):
 
 @scenario.route('/status/<string:thread_uuid>', methods=['GET'])
 def get_status(thread_uuid):
-    return json.dumps(threads[thread_uuid].status)
+    return json.dumps({'line': threads[thread_uuid].status, 'exceptions': threads[thread_uuid].exceptions})
 
 @scenario.route('/upload', methods=['POST'])
 def upload_scenario():

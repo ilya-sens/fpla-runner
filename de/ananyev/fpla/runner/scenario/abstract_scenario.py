@@ -1,6 +1,7 @@
 import sys
 import threading
 import trace
+import traceback
 from inspect import getframeinfo
 
 from selenium import webdriver
@@ -11,6 +12,7 @@ from de.ananyev.fpla.runner.util.set_trace import SetTrace
 
 class AbstractScenario(threading.Thread):
     status = ""
+    exceptions = []
     browser = None
     tracer = trace.Trace(
         ignoredirs=[sys.prefix, sys.exec_prefix],
@@ -31,7 +33,10 @@ class AbstractScenario(threading.Thread):
 
     def run(self):
         with SetTrace(self.monitor):
-            self.do_run()
+            try:
+                self.do_run()
+            except Exception as e:
+                self.exceptions.append(''.join(traceback.format_exception_only(type(e), e)))
 
     def do_run(self):
         raise NotImplemented
