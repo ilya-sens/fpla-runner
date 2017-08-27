@@ -8,25 +8,57 @@ import uuid
 from flask import Blueprint, request
 
 scenario = Blueprint('scenario', __name__)
-threads = {}
+threads = []
 tracer = trace.Trace(
     ignoredirs=[sys.prefix, sys.exec_prefix],
     trace=1,
     count=0)
 
+
 # scenario
-@scenario.route('/run/<string:name>', methods=['GET'])
-def run_scenario(name):
-    mod = importlib.import_module('de.ananyev.fpla.runner.scenario.' + name)
-    scenario = mod.Scenario()
-    scenario.start()
-    generated_uuid = uuid.uuid4().__str__()
-    threads[generated_uuid] = scenario
-    return json.dumps({'success': True, 'thread_id': generated_uuid})
+@scenario.route('/run', methods=['POST'])
+def run_scenario():
+    try:
+        scenario_model = request.get_json()
+        name = scenario_model['fileName'].split('.')[0]
+        mod = importlib.import_module('de.ananyev.fpla.runner.scenario.' + name)
+        scenario_module = mod.Scenario()
+        scenario_module.start()
+        generated_uuid = uuid.uuid4().__str__()
+        generated_thread_object = {
+            "runningThread": generated_uuid,
+            "scenarioId": scenario_model['id'],
+            "scenarioModule": scenario_module
+        }
+        threads.append(generated_thread_object)
+    except Exception as e:
+        return json.dumps({'success': False, 'message': str(e)}),
+    return json.dumps({'success': True, 'data': {'runningThread': generated_uuid, 'scenarioId': scenario_model['id']}})
+
 
 @scenario.route('/status/<string:thread_uuid>', methods=['GET'])
 def get_status(thread_uuid):
-    return json.dumps({'line': threads[thread_uuid].status, 'exceptions': threads[thread_uuid].exceptions})
+    for thread in threads:
+        if thread_uuid == thread['runningThread']:
+            return json.dumps({
+                'success': True,
+                'line': thread['scenarioModule'].status,
+                'exceptions': thread['scenarioModule'].exceptions
+            })
+    return json.dumps({'success': False, 'message': 'Thread not found'})
+
+
+@scenario.route('/status', methods=['GET'])
+def get_running_scripts():
+    result = []
+    for thread in threads:
+        result.append({
+            'scenarioId': thread['scenarioId'],
+            'runningThread': thread['runningThread'],
+            'line': thread['scenarioModule'].status,
+            'exceptions': thread['scenarioModule'].exceptions})
+    return json.dumps(result)
+
 
 @scenario.route('/upload', methods=['POST'])
 def upload_scenario():
