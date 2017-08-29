@@ -12,7 +12,6 @@ from de.ananyev.fpla.runner.util.set_trace import SetTrace
 
 class AbstractScenario(threading.Thread):
     status = ""
-    exceptions = []
     browser = None
     tracer = trace.Trace(
         ignoredirs=[sys.prefix, sys.exec_prefix],
@@ -21,6 +20,8 @@ class AbstractScenario(threading.Thread):
 
     def __init__(self):
         super(AbstractScenario, self).__init__()
+        self.exceptions = []
+        self.stop = False
 
     def open_browser(self):
         desired_capabilities = dict(DesiredCapabilities.PHANTOMJS)
@@ -42,6 +43,8 @@ class AbstractScenario(threading.Thread):
         raise NotImplemented
 
     def monitor(self, frame, event, arg):
+        if self.stop:
+            self._stop()
         if event == "line":
             frame_info = getframeinfo(frame)
             if "/scenario/" in frame_info.filename:

@@ -68,3 +68,14 @@ def upload_scenario():
     file.close()
 
     return json.dumps({'success': True, 'filename': scenario_file_json['fileName']})
+
+
+@scenario.route('/stop/<string:thread_uuid>', methods=['GET'])
+def stop_scenario(thread_uuid):
+    for thread in threads:
+        if thread_uuid == thread['runningThread']:
+            thread['scenarioModule'].stop = True
+            threads.remove(thread)
+            return json.dumps({
+                'success': True,
+            })
