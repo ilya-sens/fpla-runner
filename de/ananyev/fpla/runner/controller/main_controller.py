@@ -40,7 +40,7 @@ def get_status(thread_uuid):
 def get_running_scripts():
     results = []
     for thread in threads:
-        result = {'success': True}
+        result = {'runningThread': thread['runningThread']}
         if 'scenarioModule' in thread:
             result['scenarioLine'] = thread['scenarioModule'].status
             result['scenarioExceptions'] = thread['scenarioModule'].exceptions
@@ -53,11 +53,14 @@ def get_running_scripts():
     return json.dumps(results)
 
 
-@scenario.route('/stop/<string:thread_uuid>', methods=['GET'])
+@main.route('/stop/<string:thread_uuid>', methods=['GET'])
 def stop_scenario(thread_uuid):
     for thread in threads:
         if thread_uuid == thread['runningThread']:
-            thread['scenarioModule'].stop = True
+            if 'scenarioModule' in thread:
+                thread['scenarioModule'].stop = True
+            if 'schedulerModule' in thread:
+                thread['schedulerModule'].stop = True
             threads.remove(thread)
             return json.dumps({
                 'success': True,
