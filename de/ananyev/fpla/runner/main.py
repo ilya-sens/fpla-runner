@@ -6,7 +6,7 @@ from flask import Flask
 # from de.ananyev.fpla.runner.scenario.test_scenario import TestScenario
 from flask import request
 
-from de.ananyev.fpla.runner.controller.main_controller import scenario
+from de.ananyev.fpla.runner.controller.main_controller import scenario, scheduler, main
 
 PORT = 5000
 
@@ -31,4 +31,6 @@ def add_cors_headers(response):
 app = Flask(__name__)
 app.after_request(add_cors_headers)
 app.register_blueprint(scenario, url_prefix="/scenario")
-app.run(port=PORT, debug=True)
+app.register_blueprint(scheduler, url_prefix="/schedule")
+app.register_blueprint(main)
+app.run(port=PORT, debug=True, use_reloader=False)
