@@ -20,6 +20,7 @@ class AbstractScenario(threading.Thread):
 
     def __init__(self):
         super(AbstractScenario, self).__init__()
+        self.data = {}
         self.exceptions = []
         self.stop = False
         self.schedule_id = 0

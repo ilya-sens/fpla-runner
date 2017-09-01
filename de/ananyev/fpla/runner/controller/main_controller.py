@@ -69,12 +69,19 @@ def stop_scenario(thread_uuid):
 
 # scenario
 @scenario.route('/run', methods=['POST'])
-def run_scenario():
+def __run_scenario():
+    scenario_model = request.get_json()
+    data = scenario_model['data']
+    file_name = scenario_model['fileName']
+    return run_scenario(file_name, data)
+
+
+def run_scenario(file_name, data):
     try:
-        scenario_model = request.get_json()
-        name = scenario_model['fileName'].split('.')[0]
-        mod = importlib.import_module('de.ananyev.fpla.runner.scenario.' + name)
+        mod = importlib.import_module('de.ananyev.fpla.runner.scenario.' + file_name.split('.')[0])
+        mod = importlib.reload(mod)
         scenario_module = mod.Scenario()
+        scenario_module.data = data
         scenario_module.start()
         generated_uuid = uuid.uuid4().__str__()
         generated_thread_object = {
@@ -110,6 +117,7 @@ def run_scheduler():
         file.close()
 
         mod = importlib.import_module('de.ananyev.fpla.runner.scheduler.' + scheduler_model['fileName'].split('.')[0])
+        mod = importlib.reload(mod)
 
         scheduler_module = mod.Scheduler()
         scheduler_module.start()
