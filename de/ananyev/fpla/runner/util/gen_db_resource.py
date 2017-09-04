@@ -11,14 +11,14 @@ def get_all(table_name):
 
 
 def create(table_name, json_data):
-    return requests.post(base_url + table_name, data=json_data, headers=headers)
+    return requests.post(base_url + table_name, json=json_data, headers=headers)
 
 
 def update(table_name, json_data):
-    return requests.put(base_url + table_name + "/" + json_data["ID"], data=json_data, headers=headers)
+    return requests.put(base_url + table_name + "/" + str(json_data["ID"]), json=json_data, headers=headers)
 
 
 def delete(table_name, row_id):
-    return requests.delete(base_url + table_name + row_id)
+    return requests.delete(base_url + table_name + str(row_id))
 
 

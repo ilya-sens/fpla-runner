@@ -71,7 +71,10 @@ def stop_scenario(thread_uuid):
 @scenario.route('/run', methods=['POST'])
 def __run_scenario():
     scenario_model = request.get_json()
-    data = scenario_model['data']
+    if 'data' in scenario_model:
+        data = scenario_model['data']
+    else:
+        data = {}
     file_name = scenario_model['fileName']
     return run_scenario(file_name, data)
 
